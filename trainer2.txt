@@ -1,0 +1,19 @@
+Bob
+
+9 100
+252 0 0 128 128 0
+31 31 31 31 31 31
+1.0 0.9 1.0 1.1 1.0 1.0
+HydroPump 120 80 Water
+IceBeam 95 100 Ice
+RapidSpin 20 100 Normal
+Bite 60 100 Dark
+
+12 100
+4 0 0 252 0 252
+31 31 31 31 31 31
+1.0 1.0 0.9 1.1 1.0 1.0
+Psychic 90 100 Psychic
+AerialAce 60 100 Flying
+SilverWind 60 100 Bug
+GigaDrain 60 100 Grass
