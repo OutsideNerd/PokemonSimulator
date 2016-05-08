@@ -3,11 +3,14 @@
 
 public class Pokemon {
 	
+	public static int NUM_MOVES_MAX = 4;
+	
 	private static int uniqueIDGenerator = 1;
 	
-	private int uniqueID;
 	
-	private int dexNum;
+	private int uniqueID; // Key to uniquely identify a trainer's Pokemon (not species) 
+	
+	private int dexNum; // Number that uniquely identifies the Pokemon's SPECIES in the dex
 	private String name;
 	private int level;
 	public static final String[] STAT_NAMES = {"hp","att","def","spAtt","spDef","spd"};
@@ -24,7 +27,7 @@ public class Pokemon {
 	
 	private String type1;
 	private String type2;
-	private Move[] moves = new Move[4];
+	private Move[] moves = new Move[NUM_MOVES_MAX];
 	private int numMoves = 0;
 	
 	private boolean fainted;
@@ -55,29 +58,33 @@ public class Pokemon {
 		this.currHealth = this.finalStats[0]; // set HP to max
 	}
 	
-	public Pokemon(String name, Trainer t, int level, String type1, int[] baseStats, int[] EVs, int[] IVs, double[] natureModifier) {
-		this(name, t, level, type1, "none", baseStats, EVs, IVs, natureModifier);
+	/**
+	 * Gets the Pokemon's current health and max health
+	 * 
+	 * @return String in the following format: (current health) / (max health)
+	 */
+	public String getHealthString(){
+		return this.currHealth + "/" + this.finalStats[0];
 	}
 	
-	public Pokemon(String name, Trainer t, int level, String type1, String type2, int[] baseStats, int[] EVs, int[] IVs, double[] natureModifier) {
-		this.name = name;
-		this.trainer = t;
-		this.level = level;
-		this.type1 = type1;
-		this.type2 = type2;
-		this.baseStats = baseStats;
-		this.EVs = EVs;
-		this.IVs = IVs;
-		this.natureModifier = natureModifier;
-		calculateStats();
-		this.currHealth = this.finalStats[0];
-		this.fainted = false;
+	/**
+	 * Gets the Pokemon's type combination in a String format separated by "/" for
+	 * Pokemon with multiple types
+	 * 
+	 * @return type combination string
+	 */
+	public String getTypeString(){
+		String s = this.type1;
+		if(!this.type2.equalsIgnoreCase("none")){
+			s += ("/" + this.type2);
+		}
+		return s;
 	}
 	
-	public String getBattleStatus(){
-		return this.name + " " + this.currHealth + "/" + this.finalStats[0];
-	}
-	
+	/**
+	 * Checks to see if two Pokemon are identical to each other, using unique ID as a key
+	 * 
+	 */
 	public boolean equals(Object o){
 		if(o instanceof Pokemon){
 			Pokemon p = (Pokemon) o;
@@ -103,10 +110,25 @@ public class Pokemon {
 		return s;
 	}
 	
+	/**
+	 * Gets an Array of the moves the Pokemon knows
+	 * 
+	 * @return array of Moves
+	 */
 	public Move[] getMoves(){
 		return this.moves;
 	}
 	
+	/**
+	 * Adds a 
+	 * 
+	 * @param name
+	 * @param basePower
+	 * @param accuracy
+	 * @param type
+	 * @return whether move was successfully  added to the Pokemon or not. Returns false if
+	 * Pokemon already has maximum number of moves it can learn 
+	 */
 	public boolean addMove(String name, int basePower, int accuracy, String type){
 		if(numMoves < moves.length){
 			this.moves[numMoves] = new Move(name, basePower, accuracy, type);
@@ -118,6 +140,13 @@ public class Pokemon {
 		}
 	}
 	
+	/**
+	 * Gets a Move known by the Pokemon
+	 * 
+	 * @param s name of the move
+	 * @return Move if the name parameter matches one of the moves known. Returns null if the
+	 * move doesn't exist 
+	 */
 	public Move getMove(String s){
 		for(int i = 0; i < this.numMoves; i++){
 			if(s.equalsIgnoreCase(this.moves[i].getName())){
@@ -128,6 +157,11 @@ public class Pokemon {
 		return null;
 	}
 	
+	/**
+	 * Gets a String listing all of the POkemon's known moves
+	 * 
+	 * @return String of moves
+	 */
 	public String listMoves(){
 		String s = "";
 		for(int i = 0; i < this.moves.length; i++){
@@ -136,6 +170,12 @@ public class Pokemon {
 		return s;
 	}
 	
+	/**
+	 * Gets a stat (hp, att, def, spAtt, spDef, spd) for the Pokemon 
+	 * 
+	 * @param stat name of stat to lookup
+	 * @return stat
+	 */
 	public int getStat(String stat){
 		for(int i = 0; i < Pokemon.STAT_NAMES.length; i++){
 			if(stat.equalsIgnoreCase(Pokemon.STAT_NAMES[i])){
@@ -147,10 +187,10 @@ public class Pokemon {
 	}
 
 	/**
-	 * Attacks an enemy pokemon with a move
+	 * Attacks an enemy pokemon with a Move and deals damage if hit
 	 * 
 	 * @param enemy Pokemon to attack
-	 * @param m move to use
+	 * @param m Move to use agaionst opponent
 	 * @return boolean whether attack hit (didn't miss)
 	 */
 	public boolean attack(Pokemon enemy, Move m){
@@ -165,6 +205,11 @@ public class Pokemon {
 		}
 	}
 	
+	/**
+	 * Deals damage to a Pokemon
+	 * 
+	 * @param damage amount of HP damage dealt
+	 */
 	public void damage(int damage){
 		this.currHealth = Math.max(0, this.currHealth - damage);
 		if(this.currHealth == 0){
@@ -172,6 +217,59 @@ public class Pokemon {
 		}
 	}
 	
+	
+	/**
+	 * Calculates the type effectiveness modifier when a Move is used against the current Pokemon
+	 * 
+	 * @param m Move used against current Pokemon
+	 * @return modifier showing effectiveness (0.0, 0.25, 0.50, 1.00, 2.00, 4.00)
+	 */
+	public double getTypeEffectiveness(Move m){
+		double modifier = TypeList.getInstance().getTypeEffectiveNess(m.getType(), this.type1);
+		if(!this.type2.equals("none")){
+			modifier = modifier * TypeList.getInstance().getTypeEffectiveNess(m.getType(), this.type2);
+		}
+		return modifier;
+		
+	}
+	
+	/**
+	 * Checks if a Move gives a STAB bonus based on the Pokemon's type
+	 * 
+	 * @param m Move to check
+	 * @return boolean whether STAB bonus
+	 */
+	public boolean isSTAB(Move m){
+		if(m.getType().equalsIgnoreCase(this.type1)){
+			return true;
+		}
+		else if(!this.type2.equals("none") && m.getType().equalsIgnoreCase(this.type1)){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * Calculates the Pokemon's actual stats based on base stats, level, EVs, and IVs 
+	 * 
+	 */
+	private void calculateStats(){
+		this.finalStats[0] = (2 * this.baseStats[0] + this.IVs[0] + (int) (this.EVs[0]/4)) * this.level / 100 + this.level + 10;
+		for(int i = 1; i < this.finalStats.length; i++){
+			this.finalStats[i] = (2 * this.baseStats[i] + this.IVs[i] + (int) (this.EVs[i]/4)) * this.level / 100 + 5;
+			this.finalStats[i] *= this.natureModifier[i];
+		}
+	}
+	
+	public void setFainted(boolean fainted) {
+		this.fainted = fainted;
+	}
+	
+	// Generic getters/setters
+
 	public String getName() {
 		return name;
 	}
@@ -187,40 +285,6 @@ public class Pokemon {
 	public boolean isFainted() {
 		return fainted;
 	}
-
-	public double getTypeEffectiveness(Move m){
-		double modifier = TypeList.getInstance().getTypeEffectiveNess(m.getType(), this.type1);
-		if(!this.type2.equals("none")){
-			modifier = modifier * TypeList.getInstance().getTypeEffectiveNess(m.getType(), this.type2);
-		}
-		return modifier;
-		
-	}
-	
-	public boolean isSTAB(Move m){
-		if(m.getType().equalsIgnoreCase(this.type1)){
-			return true;
-		}
-		else if(!this.type2.equals("none") && m.getType().equalsIgnoreCase(this.type1)){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public void setFainted(boolean fainted) {
-		this.fainted = fainted;
-	}
-	
-	private void calculateStats(){
-		this.finalStats[0] = (2 * this.baseStats[0] + this.IVs[0] + (int) (this.EVs[0]/4)) * this.level / 100 + this.level + 10;
-		for(int i = 1; i < this.finalStats.length; i++){
-			this.finalStats[i] = (2 * this.baseStats[i] + this.IVs[i] + (int) (this.EVs[i]/4)) * this.level / 100 + 5;
-			this.finalStats[i] *= this.natureModifier[i];
-		}
-	}
-
 	
 	public int getLevel() {
 		return level;

@@ -73,7 +73,7 @@ public class BattleGUI extends JFrame implements ActionListener{
 			
 			
 
-			String status = p.getType1() + (p.getType2().equals("none") ? (""):("/" + p.getType2())) + "    " + p.getCurrHealth() + "/" + p.getStat("hp") + (p.isFainted() ? "    FNT":"");
+			String status = p.getTypeString() + "    " + p.getHealthString() + (p.isFainted() ? "    FNT":"");
 			JLabel l = new JLabel(status);
 			l.setPreferredSize(new Dimension((int) (0.4 * WIDTH),(int) (0.15 * HEIGHT)));
 			l.setVerticalAlignment(JLabel.CENTER);

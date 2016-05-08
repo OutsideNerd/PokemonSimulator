@@ -89,8 +89,7 @@ public class BattleSim {
 			if(!t.canFight()){
 				return false;
 			}
-			System.out.println("\n" + t.listTeam() + t.getName() + 
-					", choose another pokemon to send out (enter 1 - 6 to select): ");
+
 			Pokemon sendOut = null;
 			while(sendOut == null){
 				int i = in.nextInt();
